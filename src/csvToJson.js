@@ -1,7 +1,8 @@
 /* eslint-disable no-magic-numbers */
 const fs = require('fs');
+const path = require('path');
 
-const arrayOf = (headers, ...values) => {
+const arrayOf = ([headers, ...values]) => {
   return values.map((infoAsObject) => {
     const object = {};
     const infoAsArray = infoAsObject;
@@ -9,9 +10,9 @@ const arrayOf = (headers, ...values) => {
     headers.map((header, index) => {
       return object[header] = infoAsArray[index];
     });
+
     return object;
   });
-
 };
 
 const objectOf = (fileContents) =>
@@ -23,15 +24,16 @@ const csvToJson = function (readFrom) {
 
     const contentsAsObject = objectOf(fileContents);
     const jsonObject = arrayOf(contentsAsObject);
-    const jsonFormattedData = JSON.stringify(jsonObject);
-    const writeTo = readFrom.slice(2).split('.')[0] + '.json';
 
-    return fs.writeFileSync(writeTo, jsonFormattedData);
+    const extName = path.extname(readFrom);
+    const baseName = path.basename(readFrom, extName);
+    const writeTo = `./json/${baseName}.json`;
+
+    fs.writeFileSync(writeTo, JSON.stringify(jsonObject));
+    console.log(`✅ Successfully converted ${readFrom} into ${writeTo}`);
   } catch (error) {
     console.log('❗️❗️❗️', error.name, error.message);
   }
 };
 
-// console.log(read('./venusaur.csv'));
-csvToJson('./venusaur.csv');
-// csvToJson('./pokemon.csv');
+module.exports = { csvToJson };
